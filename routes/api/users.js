@@ -158,6 +158,20 @@ router.post('/login', (req, res) => {
   });
 });
 
+//Route '/api/users/find/all'
+router.get('/find/all', async (req, res) => {
+  try {
+    console.log('inside find all block');
+    const allUsers = await User.find()
+      .populate('leaves')
+      .populate('dailyUpdates')
+      .populate('updates');
+    res.json(allUsers);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 //ROUTE '/api/users/find/:name'
 router.get('/find/:name', async (req, res) => {
   const foundUsers = await User.find({ name: req.params.name })

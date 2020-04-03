@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { logoutUser } from '../../actions/authActions';
-import { Button, Card } from 'react-bootstrap';
+import { Button, Card, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -11,12 +11,11 @@ class Dashboard extends Component {
     super(props);
     this.state = {
       render: null,
+      allUsers: {},
       currentUser: {},
       searchUser: '',
       foundUser: [],
       show: null,
-      status: null,
-      selectedFile: null,
       flash: ''
     };
   }
@@ -62,55 +61,14 @@ class Dashboard extends Component {
   };
 
   async componentDidMount() {
-    if (this.props.location.state == undefined) {
-      console.log('yes');
-    } else {
-      if (this.props.location.state.type == 'failure') {
-        this.setState({
-          flash: (
-            <div className='container'>
-              <div
-                className=' alert '
-                role='alert'
-                style={{ backgroundColor: '#F32013' }}
-              >
-                <h4 style={{ textAlign: 'center' }}>
-                  <strong>{this.props.location.state.message}</strong>
-                </h4>
-              </div>
-            </div>
-          )
-        });
-      } else {
-        this.setState({
-          flash: (
-            <div className='container'>
-              <div
-                className=' alert '
-                role='alert'
-                style={{ backgroundColor: '#CCFF99' }}
-              >
-                <h4 style={{ textAlign: 'center' }}>
-                  <strong>{this.props.location.state.message}</strong>
-                </h4>
-              </div>
-            </div>
-          )
-        });
-      }
-
-      setTimeout(() => {
-        this.setState();
-        this.props.history.push('/');
-      }, 3000);
-    }
-
     const search = this.props.auth.user.id;
-
     const url = '/api/users/open/' + search;
     try {
-      const up = await axios.get(url);
+      const all = await axios.get('/api/users/find/all');
 
+      this.setState({ allUsers: all.data });
+      console.log(this.state.allUsers);
+      const up = await axios.get(url);
       this.setState({ currentUser: up.data });
     } catch (error) {
       console.log(error.message);
@@ -133,72 +91,101 @@ class Dashboard extends Component {
                 </li>
               </ul>
             </nav>
-            {this.state.flash}
-            <div className='container'>
-              <div className='jumbotron'>
-                <div className='row' style={{ marginLeft: '20px' }}>
-                  <Card style={{ width: '18rem', height: '20rem' }}>
-                    <Card.Img
-                      style={{ height: '100%' }}
-                      variant='top'
-                      src={this.state.currentUser.image}
-                    />
-                    <input type='file' onChange={this.fileSelector}></input>
-                    <Button onClick={this.fileUpload}>upload new DP</Button>
-                  </Card>
-                  <div
-                    style={{
-                      margin: '60px 40px',
-                      height: '15rem'
-                    }}
-                  >
-                    <ul>
-                      <li>
-                        <h1 style={{ textAlign: 'left' }}>
-                          {this.state.currentUser.name}
-                        </h1>
-                      </li>
-                      <br />
-                      <li>
-                        <h2 style={{ textAlign: 'left' }}>
-                          {this.state.currentUser.POST}
-                        </h2>
-                      </li>
-                      <br />
-                      <li>
-                        <h3 style={{ textAlign: 'left' }}>
-                          {this.state.currentUser.email}
-                        </h3>
-                      </li>
-                    </ul>
+            <div className='row'>
+              <div style={{ width: '20%', margin: '2%' }}>
+                <h3> All Employees</h3>
+                <Table striped bordered hover>
+                  <thead>
+                    <tr>
+                      <th>Employee </th>
+                      <th>email</th>
+                      <th>Post</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {this.state.allUsers.map(upd => (
+                      <tr>
+                        <td>
+                          <Link
+                            to={{
+                              pathname: '/employee',
+                              UserID: upd._id
+                            }}
+                          >
+                            {upd.name}
+                          </Link>
+                        </td>
+                        <td> {upd.email}</td>
+                        <td>{upd.POST}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+              <div style={{ width: '60%', margin: '2%' }}>
+                <div className='jumbotron'>
+                  <div className='row' style={{ marginLeft: '20px' }}>
+                    <Card style={{ width: '18rem', height: '20rem' }}>
+                      <Card.Img
+                        style={{ height: '100%' }}
+                        variant='top'
+                        src={this.state.currentUser.image}
+                      />
+                    </Card>
+                    <div
+                      style={{
+                        margin: '60px 40px',
+                        height: '15rem'
+                      }}
+                    >
+                      <ul>
+                        <li>
+                          <h1 style={{ textAlign: 'left' }}>
+                            {this.state.currentUser.name}
+                          </h1>
+                        </li>
+                        <br />
+                        <li>
+                          <h2 style={{ textAlign: 'left' }}>
+                            {this.state.currentUser.POST}
+                          </h2>
+                        </li>
+                        <br />
+                        <li>
+                          <h3 style={{ textAlign: 'left' }}>
+                            {this.state.currentUser.email}
+                          </h3>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <br />
-              <Button href='/register'>Register new Employee</Button>
-              <br />
-              <br />
-              <br />
-              <div>
-                <form
-                  onSubmit={this.onSubmit}
-                  onChange={this.onChange}
-                  style={{ textAlign: 'center' }}
-                >
-                  <label style={{ fontSize: '20px' }}>
-                    search by Employee name
-                  </label>
-                  <input
-                    autoComplete='off'
-                    type='text'
-                    id='searchUser'
-                    style={{ color: 'black' }}
-                  />
-                  <Button variant='success' type='submit'>
-                    Search
-                  </Button>
-                </form>
+                <br />
+                <Button href='/register'>Register new Employee</Button>
+                <br />
+                <br />
+                <br />
+                <div>
+                  <form
+                    onSubmit={this.onSubmit}
+                    onChange={this.onChange}
+                    style={{ textAlign: 'center' }}
+                  >
+                    <label style={{ fontSize: '20px' }}>
+                      search by Employee name
+                    </label>
+                    <input
+                      autoComplete='off'
+                      type='text'
+                      id='searchUser'
+                      style={{ color: 'black' }}
+                    />
+                    <Button variant='success' type='submit'>
+                      Search
+                    </Button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -393,7 +380,7 @@ class Dashboard extends Component {
     return (
       <div>
         {this.state.render}
-        {this.state.status}
+
         <ul>
           {this.state.foundUser.map(upd => (
             <div className='container' style={{ marginTop: '20px' }}>

@@ -54,9 +54,7 @@ class Login extends Component {
 
     return (
       <div>
-        <h1 style={{ textAlign: 'center', marginTop: '150px' }}>
-          Welcome to EOD project
-        </h1>
+        <h1 style={{ textAlign: 'center', marginTop: '150px' }}>Welcome</h1>
         <div className='container' style={{ padding: '120px' }}>
           <div className='jumbotron'>
             <h3 style={{ textAlign: 'center' }}>Login here</h3>
